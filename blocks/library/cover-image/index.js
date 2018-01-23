@@ -6,7 +6,7 @@ import { isEmpty } from 'lodash';
 /**
  * WordPress dependencies
  */
-import { Dashicon, Toolbar } from '@wordpress/components';
+import { IconButton, PanelBody, Toolbar } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import classnames from 'classnames';
 
@@ -17,7 +17,8 @@ import './editor.scss';
 import './style.scss';
 import { registerBlockType, createBlock } from '../../api';
 import Editable from '../../editable';
-import MediaUploadButton from '../../media-upload-button';
+import AlignmentToolbar from '../../alignment-toolbar';
+import MediaUpload from '../../media-upload';
 import ImagePlaceHolder from '../../image-placeholder';
 import BlockControls from '../../block-controls';
 import BlockAlignmentToolbar from '../../block-alignment-toolbar';
@@ -47,6 +48,10 @@ registerBlockType( 'core/cover-image', {
 		},
 		align: {
 			type: 'string',
+		},
+		contentAlign: {
+			type: 'string',
+			default: 'center',
 		},
 		id: {
 			type: 'number',
@@ -90,7 +95,7 @@ registerBlockType( 'core/cover-image', {
 	},
 
 	edit( { attributes, setAttributes, focus, setFocus, className } ) {
-		const { url, title, align, id, hasParallax, dimRatio } = attributes;
+		const { url, title, align, contentAlign, id, hasParallax, dimRatio } = attributes;
 		const updateAlignment = ( nextAlign ) => setAttributes( { align: nextAlign } );
 		const onSelectImage = ( media ) => setAttributes( { url: media.url, id: media.id } );
 		const toggleParallax = () => setAttributes( { hasParallax: ! hasParallax } );
@@ -101,6 +106,7 @@ registerBlockType( 'core/cover-image', {
 			undefined;
 		const classes = classnames(
 			className,
+			contentAlign !== 'center' && `has-${ contentAlign }-content`,
 			dimRatioToClass( dimRatio ),
 			{
 				'has-background-dim': dimRatio !== 0,
@@ -108,7 +114,14 @@ registerBlockType( 'core/cover-image', {
 			}
 		);
 
-		const editButtonLabel = __( 'Edit image' );
+		const alignmentToolbar	= (
+			<AlignmentToolbar
+				value={ contentAlign }
+				onChange={ ( nextAlign ) => {
+					setAttributes( { contentAlign: nextAlign } );
+				} }
+			/>
+		);
 		const controls = focus && [
 			<BlockControls key="controls">
 				<BlockAlignmentToolbar
@@ -116,19 +129,21 @@ registerBlockType( 'core/cover-image', {
 					onChange={ updateAlignment }
 				/>
 
+				{ alignmentToolbar }
 				<Toolbar>
-					<MediaUploadButton
-						buttonProps={ {
-							className: 'components-icon-button components-toolbar__control',
-							'aria-label': editButtonLabel,
-						} }
+					<MediaUpload
 						onSelect={ onSelectImage }
 						type="image"
 						value={ id }
-						tooltip={ editButtonLabel }
-					>
-						<Dashicon icon="edit" />
-					</MediaUploadButton>
+						render={ ( { open } ) => (
+							<IconButton
+								className="components-toolbar__control"
+								label={ __( 'Edit image' ) }
+								icon="edit"
+								onClick={ open }
+							/>
+						) }
+					/>
 				</Toolbar>
 			</BlockControls>,
 			<InspectorControls key="inspector">
@@ -146,6 +161,9 @@ registerBlockType( 'core/cover-image', {
 					max={ 100 }
 					step={ 10 }
 				/>
+				<PanelBody title={ __( 'Text Alignment' ) }>
+					{ alignmentToolbar }
+				</PanelBody>
 			</InspectorControls>,
 		];
 
@@ -195,7 +213,7 @@ registerBlockType( 'core/cover-image', {
 	},
 
 	save( { attributes, className } ) {
-		const { url, title, hasParallax, dimRatio, align } = attributes;
+		const { url, title, hasParallax, dimRatio, align, contentAlign } = attributes;
 		const style = url ?
 			{ backgroundImage: `url(${ url })` } :
 			undefined;
@@ -205,6 +223,7 @@ registerBlockType( 'core/cover-image', {
 			{
 				'has-background-dim': dimRatio !== 0,
 				'has-parallax': hasParallax,
+				[ `has-${ contentAlign }-content` ]: contentAlign !== 'center',
 			},
 			align ? `align${ align }` : null,
 		);
