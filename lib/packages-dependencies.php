@@ -16,7 +16,6 @@ return array(
 		'wp-rich-text',
 	),
 	'wp-api-fetch'                          => array(
-		'wp-hooks',
 		'wp-i18n',
 		'wp-url',
 	),
@@ -84,6 +83,7 @@ return array(
 		'lodash',
 		'wp-api-fetch',
 		'wp-data',
+		'wp-deprecated',
 		'wp-url',
 	),
 	'wp-data'                               => array(
