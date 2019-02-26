@@ -11,6 +11,9 @@ import { compose } from '@wordpress/compose';
 import { decodeEntities } from '@wordpress/html-entities';
 import { withSelect, withDispatch } from '@wordpress/data';
 
+/**
+ * Internal dependencies
+ */
 import styles from './style.scss';
 
 export function DefaultBlockAppender( {
@@ -23,7 +26,7 @@ export function DefaultBlockAppender( {
 		return null;
 	}
 
-	const value = decodeEntities( placeholder ) || __( 'Start writing or press \u2295 to add content' );
+	const value = decodeEntities( placeholder ) || __( 'Start writing…' );
 
 	return (
 		<TouchableWithoutFeedback
@@ -46,7 +49,7 @@ export function DefaultBlockAppender( {
 
 export default compose(
 	withSelect( ( select, ownProps ) => {
-		const { getBlockCount, getEditorSettings, getTemplateLock } = select( 'core/editor' );
+		const { getBlockCount, getEditorSettings, getTemplateLock } = select( 'core/block-editor' );
 
 		const isEmpty = ! getBlockCount( ownProps.rootClientId );
 		const { bodyPlaceholder } = getEditorSettings();
@@ -61,7 +64,7 @@ export default compose(
 		const {
 			insertDefaultBlock,
 			startTyping,
-		} = dispatch( 'core/editor' );
+		} = dispatch( 'core/block-editor' );
 
 		return {
 			onAppend() {

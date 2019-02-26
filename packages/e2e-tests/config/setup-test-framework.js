@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import 'expect-puppeteer';
 import { get } from 'lodash';
 
 /**
@@ -13,6 +12,7 @@ import {
 	enablePageDialogAccept,
 	setBrowserViewport,
 	visitAdminPage,
+	activatePlugin,
 } from '@wordpress/e2e-test-utils';
 
 /**
@@ -154,6 +154,7 @@ beforeAll( async () => {
 
 	await trashExistingPosts();
 	await setupBrowser();
+	await activatePlugin( 'gutenberg-test-plugin-disables-the-css-animations' );
 } );
 
 afterEach( async () => {

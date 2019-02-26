@@ -2,6 +2,8 @@
  * WordPress dependencies
  */
 import '@wordpress/core-data';
+import '@wordpress/block-editor';
+import '@wordpress/editor';
 import {
 	registerBlockType,
 	setDefaultBlockName,
@@ -20,6 +22,7 @@ import * as gallery from './gallery';
 import * as archives from './archives';
 import * as audio from './audio';
 import * as button from './button';
+import * as calendar from './calendar';
 import * as categories from './categories';
 import * as code from './code';
 import * as columns from './columns';
@@ -39,6 +42,7 @@ import * as preformatted from './preformatted';
 import * as pullquote from './pullquote';
 import * as reusableBlock from './block';
 import * as rss from './rss';
+import * as search from './search';
 import * as separator from './separator';
 import * as shortcode from './shortcode';
 import * as spacer from './spacer';
@@ -48,6 +52,7 @@ import * as template from './template';
 import * as textColumns from './text-columns';
 import * as verse from './verse';
 import * as video from './video';
+import * as tagCloud from './tag-cloud';
 
 import * as classic from './classic';
 
@@ -67,6 +72,7 @@ export const registerCoreBlocks = () => {
 		archives,
 		audio,
 		button,
+		calendar,
 		categories,
 		code,
 		columns,
@@ -87,11 +93,13 @@ export const registerCoreBlocks = () => {
 		preformatted,
 		pullquote,
 		rss,
+		search,
 		separator,
 		reusableBlock,
 		spacer,
 		subhead,
 		table,
+		tagCloud,
 		template,
 		textColumns,
 		verse,

@@ -220,7 +220,7 @@ However, if the change was intentional, follow these steps to update the snapsho
    npm run test-unit -- --updateSnapshot --testPathPattern path/to/tests
    ```
 1. Review the diff and ensure the changes are expected and intentional.
-1. Commit.
+2. Commit.
 
 #### What are snapshots?
 
@@ -286,7 +286,7 @@ describe( 'SolarSystem', () => {
 } );
 ```
 
-Reducer tests are also be a great fit for snapshots. They are often large, complex data structures that shouldn't change unexpectedly, exactly what snapshots excel at!
+Reducer tests are also a great fit for snapshots. They are often large, complex data structures that shouldn't change unexpectedly, exactly what snapshots excel at!
 
 #### Working with snapshots
 
@@ -354,6 +354,12 @@ or interactively
 
 ```bash
 npm run test-e2e:watch
+```
+
+Sometimes it's useful to observe the browser while running tests. To do so you can use these environment variables:
+
+```bash
+PUPPETEER_HEADLESS=false PUPPETEER_SLOWMO=80 npm run test-e2e:watch
 ```
 
 If you're using a different setup, you can provide the base URL, username and password like this:

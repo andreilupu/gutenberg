@@ -99,8 +99,9 @@ export class BlockListBlock extends Component {
 			this.focusTabbable( true );
 		}
 
-		// When triggering a multi-selection,
-		// move the focus to the wrapper of the first selected block.
+		// When triggering a multi-selection, move the focus to the wrapper of the first selected block.
+		// This ensures that it is not possible to continue editing the initially selected block
+		// when a multi-selection is triggered.
 		if ( this.props.isFirstMultiSelected && ! prevProps.isFirstMultiSelected ) {
 			this.wrapperNode.focus();
 		}
@@ -301,6 +302,8 @@ export class BlockListBlock extends Component {
 	deleteOrInsertAfterWrapper( event ) {
 		const { keyCode, target } = event;
 
+		// These block shortcuts should only trigger if the wrapper of the block is selected
+		// And when it's not a multi-selection to avoid conflicting with RichText/Inputs and multiselection.
 		if (
 			! this.props.isSelected ||
 			target !== this.wrapperNode ||
@@ -516,25 +519,25 @@ export class BlockListBlock extends Component {
 								clientId={ clientId }
 								rootClientId={ rootClientId }
 							/>
-							{ shouldRenderMovers && (
-								<BlockMover
-									clientIds={ clientId }
-									blockElementId={ blockElementId }
-									isFirst={ isFirst }
-									isLast={ isLast }
-									isHidden={ ! ( isHovered || isSelected ) || hoverArea !== 'left' }
-									isDraggable={
-										isDraggable !== false &&
-										( ! isPartOfMultiSelection && isMovable )
-									}
-									onDragStart={ this.onDragStart }
-									onDragEnd={ this.onDragEnd }
-								/>
-							) }
 							{ isFirstMultiSelected && (
 								<BlockMultiControls rootClientId={ rootClientId } />
 							) }
 							<div className="editor-block-list__block-edit">
+								{ shouldRenderMovers && (
+									<BlockMover
+										clientIds={ clientId }
+										blockElementId={ blockElementId }
+										isFirst={ isFirst }
+										isLast={ isLast }
+										isHidden={ ! ( isHovered || isSelected ) || hoverArea !== 'left' }
+										isDraggable={
+											isDraggable !== false &&
+											( ! isPartOfMultiSelection && isMovable )
+										}
+										onDragStart={ this.onDragStart }
+										onDragEnd={ this.onDragEnd }
+									/>
+								) }
 								{ shouldShowBreadcrumb && (
 									<BlockBreadcrumb
 										clientId={ clientId }
@@ -634,7 +637,7 @@ const applyWithSelect = withSelect(
 			hasSelectedInnerBlock,
 			getTemplateLock,
 			__unstableGetBlockWithoutInnerBlocks,
-		} = select( 'core/editor' );
+		} = select( 'core/block-editor' );
 		const block = __unstableGetBlockWithoutInnerBlocks( clientId );
 		const isSelected = isBlockSelected( clientId );
 		const { hasFixedToolbar, focusMode } = getEditorSettings();
@@ -680,7 +683,6 @@ const applyWithSelect = withSelect(
 );
 
 const applyWithDispatch = withDispatch( ( dispatch, ownProps, { select } ) => {
-	const { getBlockSelectionStart } = select( 'core/editor' );
 	const {
 		updateBlockAttributes,
 		selectBlock,
@@ -690,9 +692,8 @@ const applyWithDispatch = withDispatch( ( dispatch, ownProps, { select } ) => {
 		removeBlock,
 		mergeBlocks,
 		replaceBlocks,
-		editPost,
 		toggleSelection,
-	} = dispatch( 'core/editor' );
+	} = dispatch( 'core/block-editor' );
 
 	return {
 		onChange( clientId, attributes ) {
@@ -709,7 +710,7 @@ const applyWithDispatch = withDispatch( ( dispatch, ownProps, { select } ) => {
 			const { clientId, rootClientId } = ownProps;
 			const {
 				getBlockIndex,
-			} = select( 'core/editor' );
+			} = select( 'core/block-editor' );
 			const index = getBlockIndex( clientId, rootClientId );
 			insertDefaultBlock( {}, rootClientId, index + 1 );
 		},
@@ -717,7 +718,7 @@ const applyWithDispatch = withDispatch( ( dispatch, ownProps, { select } ) => {
 			const { clientId, rootClientId } = ownProps;
 			const {
 				getBlockIndex,
-			} = select( 'core/editor' );
+			} = select( 'core/block-editor' );
 			const index = getBlockIndex( clientId, rootClientId );
 			insertBlocks( blocks, index + 1, rootClientId );
 		},
@@ -729,7 +730,7 @@ const applyWithDispatch = withDispatch( ( dispatch, ownProps, { select } ) => {
 			const {
 				getPreviousBlockClientId,
 				getNextBlockClientId,
-			} = select( 'core/editor' );
+			} = select( 'core/block-editor' );
 
 			if ( forward ) {
 				const nextBlockClientId = getNextBlockClientId( clientId );
@@ -746,13 +747,19 @@ const applyWithDispatch = withDispatch( ( dispatch, ownProps, { select } ) => {
 		onReplace( blocks ) {
 			replaceBlocks( [ ownProps.clientId ], blocks );
 		},
-		onMetaChange( meta ) {
-			editPost( { meta } );
+		onMetaChange( updatedMeta ) {
+			const { getEditorSettings } = select( 'core/block-editor' );
+			const onChangeMeta = getEditorSettings().__experimentalMetaSource.onChange;
+			onChangeMeta( updatedMeta );
 		},
 		onShiftSelection() {
 			if ( ! ownProps.isSelectionEnabled ) {
 				return;
 			}
+
+			const {
+				getBlockSelectionStart,
+			} = select( 'core/block-editor' );
 
 			if ( getBlockSelectionStart() ) {
 				multiSelect( getBlockSelectionStart(), ownProps.clientId );
